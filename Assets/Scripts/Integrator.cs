@@ -1,0 +1,64 @@
+using System;
+using UnityEngine;
+
+/* This is the superset of what we need, but we can get away
+with something simpler */
+/* 
+static double[] Heun(Func<double[], double> f, params double[][] arrays)
+{
+    //Size of Array of Each Parameter
+    int n = arrays[0].Length;
+    //Same as the size of Array of result 
+    var r = new double[n];
+    var args = new double[arrays.Length];
+    for (int i = 0; i < n; i++)
+    {
+        for (int k = 0; k < arrays.Length; k++) args[k] = arrays[k][i];
+        r[i] = f(args);
+    }
+    return r;
+}
+*/
+//Params keyword -> https://learn.microsoft.com/en-gb/previous-versions/visualstudio/visual-studio-2008/w5zay9db(v=vs.90)
+//allows multiple params of the same type
+public class Heun
+{
+    
+//Heun's Method
+    public static (double[], double) Integrate(
+        Func<double[], double, double[]> f,
+       double[] previousValue,
+       double step,
+       double t, params double[] paramsArray)
+    {
+        //number of parameters
+        int n = previousValue.Length;
+    
+        //variables associated with the result, necessary for the method
+        double[] r1 = new double[n];
+        double[] r0 = new double[n];
+        double[] rtilde = new double[n];
+    
+        //Initial value
+        r0 = previousValue;
+    
+        //result of running function
+        double[] v = new double[n];
+        v = f(r0, t);
+        for (int i = 0; i < v.Length; i++)
+        {
+            rtilde[i] = r0[i] + step * v[i];
+        }
+    
+        double[] vtilde;
+        vtilde = f(rtilde, t + step);
+        for (int i = 0; i < v.Length; i++)
+        {
+            r1[i] = r0[i] + step / 2 * (v[i] + vtilde[i]);
+        }
+    
+        return (r1, t + step);
+    }
+//When calling parameters, f can expect parameters like ([x1,x2,x3,...], t)
+//So that its outputs are, amongst others, [t+step]
+}
