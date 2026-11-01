@@ -449,7 +449,7 @@ MonoBehaviour:
   cam: {fileID: 508340335}
   target: {fileID: 464741055}
   deltaHeight: 4
-  deltaX: 6
+  deltaXRatio: 6
   ratioY: 0.8
   ratioX: 0.4
   ratioLook: 0
