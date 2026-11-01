@@ -51,11 +51,17 @@ public class SpringMass : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        var (speed, _) = Heun.Integrate(Acceleration, new[] { _speed }, Time.fixedDeltaTime, Time.timeAsDouble);
-        var (displacement, _) = Heun.Integrate(GetSpeed, new[] { this.displacement }, Time.fixedDeltaTime, Time.timeAsDouble);
-        _speed = speed[0];
-        this.displacement = displacement[0];
+        try
+        {
+            var (speed, _) = Heun.Integrate(Acceleration, new[] { _speed }, Time.fixedDeltaTime, Time.timeAsDouble);
+            var (displacement, _) = Heun.Integrate(GetSpeed, new[] { this.displacement }, Time.fixedDeltaTime, Time.timeAsDouble);
+            _speed = speed[0];
+            this.displacement = displacement[0];
+        }
+        catch
+        {
 
+        }
         transform.position = movement * (float)this.displacement;
     }
 }

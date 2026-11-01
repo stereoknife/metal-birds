@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class CameraScript : MonoBehaviour
         //calculating where the camera should be, given the parameters
         target_pos = target.transform.position;
         target_pos = target_pos - target.transform.forward * (float)deltaXRatio;
-        target_pos.y += (float)deltaHeight;
+        target_pos.y -= (float)deltaHeight;
         //assigning the position to the camera
         cam.transform.position = target_pos;
         //telling where camera ought to look at
@@ -47,5 +48,6 @@ public class CameraScript : MonoBehaviour
             BetterLERP.BetterLerp(a.z, b.z, ratioX));
        //target_pos = b;
         cam.transform.LookAt(target.transform);
+       //Debug.Log($"{target.transform.forward * (float)deltaXRatio}");
     }
 }
