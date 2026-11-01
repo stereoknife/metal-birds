@@ -141,19 +141,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7bdc05bfe1abfc9448555c186cbd58f9, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7bdc05bfe1abfc9448555c186cbd58f9, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7bdc05bfe1abfc9448555c186cbd58f9, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000015454312
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7bdc05bfe1abfc9448555c186cbd58f9, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.000000015454312
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 7bdc05bfe1abfc9448555c186cbd58f9, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -197,10 +197,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpringMass
   movement: {x: 0, y: 0, z: 1}
-  spring: 500
-  damper: 5
+  spring: 5
+  damper: 1
   mass: 100
-  displacement: 2
+  displacement: 5
 --- !u!1 &508340333
 GameObject:
   m_ObjectHideFlags: 0
@@ -450,8 +450,8 @@ MonoBehaviour:
   target: {fileID: 464741055}
   deltaHeight: 4
   deltaXRatio: 6
-  ratioY: 0.8
-  ratioX: 0.4
+  ratioY: 0.35
+  ratioX: 0.2
   ratioLook: 0
 --- !u!1 &2046020550
 GameObject:
