@@ -20,7 +20,7 @@ public class CameraScript : MonoBehaviour
         //calculating where the camera should be, given the parameters
         target_pos = target.transform.position;
         target_pos = target_pos - target.transform.forward * (float)deltaXRatio;
-        target_pos.y -= (float)deltaHeight;
+        target_pos.y += (float)deltaHeight;
         //assigning the position to the camera
         cam.transform.position = target_pos;
         //telling where camera ought to look at
