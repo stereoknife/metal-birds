@@ -58,6 +58,35 @@ public static class Heun
     
         return (r1, t + step);
     }
-//When calling parameters, f can expect parameters like ([x1,x2,x3,...], t)
-//So that its outputs are, amongst others, [t+step]
+    //When calling parameters, f can expect parameters like ([x1,x2,x3,...], t)
+    //So that its outputs are, amongst others, [t+step]
+
+
+    //Signature of Heun for single variable equations
+    public static (float, float) Integrate(
+       Func<float, float> f,
+       float previousValue,
+       float step,
+       float t, params float[] paramsArray)
+    {
+
+        //variables associated with the result, necessary for the method
+        float r1;
+        float r0;
+        float rtilde;
+
+        //Initial value
+        r0 = previousValue;
+
+        //result of running function
+        float v;
+        v = f(r0);
+        rtilde = r0 + step * v;
+
+        float vtilde = f(rtilde);
+
+        r1 = r0 + step / 2 * (v + vtilde);
+        return (r1, t + step);
+    }
+
 }
