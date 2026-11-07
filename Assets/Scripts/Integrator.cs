@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 /* This is the superset of what we need, but we can get away
 with something simpler */
@@ -21,7 +20,7 @@ static double[] Heun(Func<double[], double> f, params double[][] arrays)
 */
 //Params keyword -> https://learn.microsoft.com/en-gb/previous-versions/visualstudio/visual-studio-2008/w5zay9db(v=vs.90)
 //allows multiple params of the same type
-public class Heun
+public static class Heun
 {
     
 //Heun's Method
