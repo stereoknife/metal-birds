@@ -236,7 +236,10 @@ MonoBehaviour:
   rotationLimit: 20
   rotationSpeed: 90
   decayRate: 45
-  distFWheels: 0
+  distFWheels: 1.5
+  Cd: 1.45
+  frontArea: 4
+  rho: 1.225
   vehicle: {fileID: 464741055}
   lfWheel: {fileID: 122725351}
   rfWheel: {fileID: 122725350}

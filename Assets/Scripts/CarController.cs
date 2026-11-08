@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.UIElements;
 using static Unity.Mathematics.math;
 
 //Inputs
@@ -26,7 +27,7 @@ public static class Aerodynamics
 { 
     public static float Drag(float Cd, float V, float rho, float S)
     {
-        return (1/2) * pow(V,2f) * rho * S * Cd;
+        return 0.5f * pow(V,2f) * rho * S * Cd;
     }
 
     public static float Thrust(float V, float P)
@@ -61,18 +62,35 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform rwdWheels;
     //state variables
     private float speed = 0;
-    private float accel = 0;
-    private float angSpeed = 0;
+    private float rotationY = 0;
     private Quaternion rotVehicle; //rotation of vehicle
     private Vector3 posVehicle; //position of vehicle
-    private float rotrfWheel; //rotation left forward wheel
+    private Quaternion initialRfRotation; //Initial Rotations of Left and Right Forward Wheels
+    private Quaternion initialLfRotation; 
+    private float rotrfWheel; //rotation right forward wheel
     private float rotlfWheel; //rotation left forward wheel
     private float t = 0;
+    //helper side-variables
+    //avoid garbage collection
+    float R;
+    float delta;
+    float angspeed;
+    float dx;
+    float dy;
+    float dTheta;
+    float deltaDeg;
+    float signL;
+    float signR;
+    float steer;
+    float throttle;
 
-    public float Accelerate(float V)
+    /// <summary>
+    /// Order of params array "vars": Power, Cd, Rho, Area, Mass
+    /// </summary>
+    public float Accelerate(float V, params float[] vars)
     {
-        return Aerodynamics.Thrust(speed, drivePower * 1000) -
-            Aerodynamics.Drag(Cd, speed, rho, frontArea) / mass;
+        return (Aerodynamics.Thrust(V, vars[0] * 1000)*throttle -
+            Aerodynamics.Drag(vars[1], V, vars[2], vars[3])) / vars[4];
     }
 
     public void Start()
@@ -84,33 +102,27 @@ public class CarController : MonoBehaviour
         rotlfWheel = 0;
         //it doesn't technically need the wheels to be alligned
         //but for now that'll be the case
-        rfWheel.localRotation = Quaternion.identity;
-        lfWheel.localRotation = Quaternion.identity;
+        initialRfRotation = rfWheel.localRotation;
+        initialLfRotation = lfWheel.localRotation;
     }
 
     public void FixedUpdate()
     {
-        var steer = CarInput.Steer;
-        var throttle = CarInput.Throttle - CarInput.Brake;
+        steer  = CarInput.Steer;
+        throttle = CarInput.Throttle - CarInput.Brake;
 
         //-=> WHEEL ROTATION <=-
         if (abs(steer) > 0.05f)
         {
-            if (abs(rotrfWheel) < 15)
-            {
-                rotrfWheel += rotationSpeed * steer * Time.fixedDeltaTime;
-                rotlfWheel += rotationSpeed * steer * Time.fixedDeltaTime;
-            } else
-            {
-                rotrfWheel = rotrfWheel / abs(rotrfWheel) * 15;
-                rotlfWheel = rotlfWheel / abs(rotlfWheel) * 15;
-            }
+            rotrfWheel = clamp(rotrfWheel + rotationSpeed * steer * Time.fixedDeltaTime,
+                  -rotationLimit, rotationLimit);
+            rotlfWheel = rotrfWheel;
         } else
         {
             if(abs(rotrfWheel) >= 1f)
             {
-                var signR = rotrfWheel / abs(rotrfWheel);
-                var signL = rotlfWheel / abs(rotlfWheel);
+                signR = rotrfWheel / abs(rotrfWheel);
+                signL = rotlfWheel / abs(rotlfWheel);
                 rotrfWheel -= signR * decayRate * Time.fixedDeltaTime; 
                 rotlfWheel -= signL * decayRate * Time.fixedDeltaTime;
             } else
@@ -121,12 +133,51 @@ public class CarController : MonoBehaviour
         }
 
         //-=>VEHICLE MOVEMENT<=-
-        (speed, _) = Heun.Integrate(Accelerate, speed, Time.fixedDeltaTime, t);
-        t += Time.fixedDeltaTime;
+        float dt = Time.fixedDeltaTime;
 
-        //// ### ADDD THEEEE RESSSST HEEEEREEEE ### ?? ?? ?? ?? ////
+        (speed, _) = Heun.Integrate(
+            Accelerate, speed, dt, t,
+            new float[] { drivePower, Cd, rho, frontArea, mass }
+        );
 
-        Debug.Log($"{rotlfWheel}");
+        delta = TORADIANS * (rotrfWheel + rotlfWheel) / 2f;
+
+        angspeed = speed * tan(delta) / distFWheels;
+
+        // Angular displacement in radians
+        dTheta = angspeed * dt;
+
+        // Calculate displacement in vehicle-local coordinates
+        if (abs(angspeed) > 0.0001f)
+        {
+            R = speed / angspeed;
+
+            dx = R * (1f - cos(dTheta));
+            dy = R * sin(dTheta); // local Z displacement
+        }
+        else
+        {
+            dx = 0f;
+            dy = speed * dt;
+        }
+
+        t += dt;
+
+        // Convert local displacement to world coordinates
+        Vector3 localDisplacement = new Vector3(dx, 0f, dy);
+
+        Vector3 worldDisplacement =
+            vehicle.transform.TransformDirection(localDisplacement);
+
+        // Apply translation before changing orientation
+        vehicle.transform.position += worldDisplacement;
+
+        // Apply angular displacement (Unity expects degrees)
+        deltaDeg = dTheta * TODEGREES;
+
+        vehicle.transform.Rotate(0f, deltaDeg, 0f, Space.Self);
+
+        //Debug.Log($"{rotlfWheel}");
     }
 
     public void Update()
@@ -135,17 +186,37 @@ public class CarController : MonoBehaviour
         //so far we are keeping their angles always identical
         if (abs(rotrfWheel) <= 1 && abs(rotlfWheel) <= 1)
         {
-            rfWheel.localRotation = Quaternion.identity;
-            lfWheel.localRotation = Quaternion.identity;
+            rfWheel.localRotation = initialRfRotation;
+            lfWheel.localRotation = initialLfRotation;
             //note to Nosh: You can do
             //"rotrfWheel = rotlfWheel = Quaternion.identity;"
-            //in C#.
+            //in C#
         }
         else
         {
+            //making axis to keep track of "up" axis in the parent coordinate
+            Vector3 axisR = rfWheel.parent.InverseTransformDirection(
+                vehicle.transform.up
+            );
+
+            Vector3 axisL = lfWheel.parent.InverseTransformDirection(
+                vehicle.transform.up
+            );
+
             //the meshes orient according to the rotation angle
-            rfWheel.localRotation = Quaternion.AngleAxis(rotrfWheel, rfWheel.transform.up);
-            lfWheel.localRotation = Quaternion.AngleAxis(rotlfWheel, lfWheel.transform.up);
+            // Quaternion multiplication order matters:
+            // Applying the steering quaternion on the LEFT rotates around
+            // an axis expressed in the wheel's parent coordinate system,
+            // preserving the wheel's initial local orientation.
+            // Reversing the order would apply the rotation relative to
+            // the wheel's initial local coordinate system instead.
+
+            rfWheel.localRotation =
+                Quaternion.AngleAxis(rotrfWheel, axisR) * initialRfRotation;
+
+            lfWheel.localRotation =
+                Quaternion.AngleAxis(rotlfWheel, axisL) * initialLfRotation;
         }
+
     }
 }

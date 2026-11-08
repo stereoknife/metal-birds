@@ -64,7 +64,7 @@ public static class Heun
 
     //Signature of Heun for single variable equations
     public static (float, float) Integrate(
-       Func<float, float> f,
+       Func<float, float[], float> f,
        float previousValue,
        float step,
        float t, params float[] paramsArray)
@@ -80,10 +80,10 @@ public static class Heun
 
         //result of running function
         float v;
-        v = f(r0);
+        v = f(r0, paramsArray);
         rtilde = r0 + step * v;
 
-        float vtilde = f(rtilde);
+        float vtilde = f(rtilde, paramsArray);
 
         r1 = r0 + step / 2 * (v + vtilde);
         return (r1, t + step);
