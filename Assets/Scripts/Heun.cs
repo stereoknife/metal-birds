@@ -25,7 +25,7 @@ public static class Heun
     
 //Heun's Method
     public static (double[], double) Integrate(
-        Func<double[], double, double[]> f,
+        Func<double[], double, double[]> F,
        double[] previousValue,
        double step,
        double t, params double[] paramsArray)
@@ -43,14 +43,14 @@ public static class Heun
     
         //result of running function
         double[] v = new double[n];
-        v = f(r0, t);
+        v = F(r0, t);
         for (int i = 0; i < v.Length; i++)
         {
             rtilde[i] = r0[i] + step * v[i];
         }
     
         double[] vtilde;
-        vtilde = f(rtilde, t + step);
+        vtilde = F(rtilde, t + step);
         for (int i = 0; i < v.Length; i++)
         {
             r1[i] = r0[i] + step / 2 * (v[i] + vtilde[i]);
