@@ -77,6 +77,10 @@ public class CarController : MonoBehaviour
     float angspeed;
     float dx;
     float dy;
+    float x;
+    float y;
+    float displacement;
+    float Theta;
     float dTheta;
     float deltaDeg;
     float signL;
@@ -85,12 +89,28 @@ public class CarController : MonoBehaviour
     float throttle;
 
     /// <summary>
-    /// Order of params array "vars": Power, Cd, Rho, Area, Mass
+    /// Returns the derivatives of the vehicle's state variables for integration.
+    /// State: [Speed, Displacement, Heading]
+    /// Derivatives: [Acceleration, Speed, Angular Velocity]
     /// </summary>
-    public float Accelerate(float V, params float[] vars)
+    public float[] Accelerate(float[] x0, float t)
     {
-        return (Aerodynamics.Thrust(V, vars[0] * 1000)*throttle -
-            Aerodynamics.Drag(vars[1], V, vars[2], vars[3])) / vars[4];
+        float[] y = new float[3];
+
+        // Longitudinal acceleration from propulsion and aerodynamic drag
+        y[0] = (Aerodynamics.Thrust(x0[0], drivePower * 1000) * throttle -
+            Aerodynamics.Drag(Cd, x0[0], rho, frontArea)) / mass;
+
+        // Rate of change of displacement
+        y[1] = x0[0];
+
+        // Average front-wheel steering angle (radians)
+        delta = TORADIANS * (rotrfWheel + rotlfWheel) / 2f;
+
+        // Yaw rate, assuming no lateral slip at the center of mass
+        y[2] = x0[0] * tan(delta) / distFWheels;
+
+        return y;
     }
 
     public void Start()
@@ -135,30 +155,39 @@ public class CarController : MonoBehaviour
         //-=>VEHICLE MOVEMENT<=-
         float dt = Time.fixedDeltaTime;
 
-        (speed, _) = Heun.Integrate(
-            Accelerate, speed, dt, t,
-            new float[] { drivePower, Cd, rho, frontArea, mass }
-        );
+        float[] x0 = new float[3];
+        x0[0] = speed;
+        x0[1] = displacement;
+        x0[2] = Theta;
 
-        delta = TORADIANS * (rotrfWheel + rotlfWheel) / 2f;
+
+        (float[] x1, _) = Heun.Integrate(Accelerate, x0, dt, t);
+
+        // Calculate increments before updating state variables
+        float ds = x1[1] - x0[1];
+        // Angular displacement in radians
+        dTheta = x1[2] - x0[2];
+
+        // Update integrated state
+        speed = x1[0];
+        displacement = x1[1];
+        Theta = x1[2];
+
+        //delta = TORADIANS * (rotrfWheel + rotlfWheel) / 2f;
 
         angspeed = speed * tan(delta) / distFWheels;
-
-        // Angular displacement in radians
-        dTheta = angspeed * dt;
 
         // Calculate displacement in vehicle-local coordinates
         if (abs(angspeed) > 0.0001f)
         {
             R = speed / angspeed;
-
             dx = R * (1f - cos(dTheta));
             dy = R * sin(dTheta); // local Z displacement
         }
         else
         {
             dx = 0f;
-            dy = speed * dt;
+            dy = ds;
         }
 
         t += dt;

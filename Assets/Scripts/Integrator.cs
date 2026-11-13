@@ -65,7 +65,7 @@ public static class Heun
     //Signature of Heun for single variable equations
     public static (float, float) Integrate(
        Func<float, float[], float> f,
-       float previousValue,
+float[] x0, float previousValue,
        float step,
        float t, params float[] paramsArray)
     {
@@ -86,6 +86,42 @@ public static class Heun
         float vtilde = f(rtilde, paramsArray);
 
         r1 = r0 + step / 2 * (v + vtilde);
+        return (r1, t + step);
+    }
+
+	//Heun's Signature for all floats
+    public static (float[], float) Integrate(
+        Func<float[], float, float[]> f,
+       float[] previousValue,
+       float step,
+       float t)
+    {
+        //number of parameters
+        int n = previousValue.Length;
+    
+        //variables associated with the result, necessary for the method
+        float[] r1 = new float[n];
+        float[] r0 = new float[n];
+        float[] rtilde = new float[n];
+    
+        //Initial value
+        r0 = previousValue;
+    
+        //result of running function
+        float[] v = new float[n];
+        v = f(r0, t);
+        for (int i = 0; i < v.Length; i++)
+        {
+            rtilde[i] = r0[i] + step * v[i];
+        }
+    
+        float[] vtilde;
+        vtilde = f(rtilde, t + step);
+        for (int i = 0; i < v.Length; i++)
+        {
+            r1[i] = r0[i] + step / 2 * (v[i] + vtilde[i]);
+        }
+    
         return (r1, t + step);
     }
 
