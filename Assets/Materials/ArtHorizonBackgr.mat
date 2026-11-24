@@ -308,6 +308,9 @@ Material:
     - _ZTestModeDistortion: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
+    - _angleLimit: 90
+    - _angleScale: 0.346898
+    - _pitch: 0
     m_Colors:
     - _BaseColor: {r: 0.9063317, g: 0.9063317, b: 0.9063317, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
