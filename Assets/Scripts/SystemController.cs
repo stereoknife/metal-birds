@@ -1,14 +1,14 @@
-using System.Linq.Expressions;
 using UnityEngine;
 
 
 
+[RequireComponent(typeof(Animator))]
 public class Animated : MonoBehaviour
 {
     Animator animator;
     public string currentState { get; private set; }
 
-    private void Start()
+    private void Awake()
     {
         animator = GetComponent<Animator>();
     }
@@ -33,10 +33,13 @@ public class SystemController : MonoBehaviour
     const string OFF = "off";
     const string BLINK = "blinking";
 
+    [SerializeField] private Animated battAnim;
+    [SerializeField] private Animated apuAnim;
+    [SerializeField] private Animated battLight;
+    [SerializeField] private Animated apuLight;
+    
     [SerializeField] private Switch battSwitch;
     [SerializeField] private Switch apuSwitch;
-    [SerializeField] private Lamp battLight;
-    [SerializeField] private Lamp apuLight;
 
 
     //state variables
@@ -55,13 +58,13 @@ public class SystemController : MonoBehaviour
 
     void OnBattSwitchPressedHandler()
     {
-        if (battSwitch.currentState == OFF)
+        if (battAnim.currentState == OFF)
         {
-            battSwitch.ChangeAnimationState(ON);
+            battAnim.ChangeAnimationState(ON);
             batt = true;
         } else
         {
-            battSwitch.ChangeAnimationState(OFF);
+            battAnim.ChangeAnimationState(OFF);
             batt = false;
         }
     }
@@ -72,6 +75,7 @@ public class SystemController : MonoBehaviour
     }
 
     // Update is called once per frame
+    /*
     void Update()
     {
         if (batt)
@@ -79,4 +83,5 @@ public class SystemController : MonoBehaviour
         else
             battLight.ChangeAnimationState(OFF);
     }
+    */
 }
