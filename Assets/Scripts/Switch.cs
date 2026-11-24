@@ -1,36 +1,30 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-
-public class Switch : Animated
+public class Switch : MonoBehaviour
 {
     public delegate void StateChange();
-    Collider collider0;
+    Collider col;
     public event StateChange OnSwitchPressed;
-    //public event StateChange OnSwitchReleased;
 
-    /*void OnCollisionEnter(Collision collision)
+    // Don't forget to assign components!!!
+    public void Awake()
     {
-        // Test for right conditions otherwise return;
-        OnSwitchPressed?.Invoke();
+        col = GetComponent<Collider>();
+        if (col == null) Debug.LogError($"{gameObject.name} has no collider attached");
     }
-
-    void OnCollisionExit(Collision other)
-    {
-        // Test for right conditions otherwise return;
-        OnSwitchReleased?.Invoke();
-    }*/
 
     private void OnMouseDown()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+        var pos = Mouse.current.position.ReadValue();
+        
+        RaycastHit hit;
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(pos), out hit))
         {
-            RaycastHit hit;
-            if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit))
+            if (hit.collider == col)
             {
-                if (hit.collider == collider0)
-                {
-                    OnSwitchPressed?.Invoke();
-                }
+                OnSwitchPressed?.Invoke();
             }
         }
     }
