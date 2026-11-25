@@ -14,7 +14,7 @@ public class Switch : MonoBehaviour
         if (col == null) Debug.LogError($"{gameObject.name} has no collider attached");
     }
 
-    private void OnMouseDown()
+    private void OnClick()
     {
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
         var pos = Mouse.current.position.ReadValue();
