@@ -2,44 +2,26 @@ using UnityEngine;
 
 
 
-[RequireComponent(typeof(Animator))]
-public class Animated : MonoBehaviour
-{
-    Animator animator;
-    public string currentState { get; private set; }
-
-    private void Awake()
-    {
-        animator = GetComponent<Animator>();
-    }
-
-    public void ChangeAnimationState(string newState)
-    {
-        //stop the same animation from interrupting itself
-        if (currentState == newState) return;
-
-        //play animation
-        animator.Play(newState);
-
-        //reassign current state
-        currentState = newState;
-    }
-
-}
-
 public class SystemController : MonoBehaviour
 {
+    //const string ON = "BaseLayer.on";
+    //const string OFF = "BaseLayer.off";
+    //const string BLINK = "BaseLayer.blinking";
     const string ON = "on";
     const string OFF = "off";
     const string BLINK = "blinking";
 
+
     [SerializeField] private Animated battAnim;
     [SerializeField] private Animated apuAnim;
+    [SerializeField] private Animated armAnim;
     [SerializeField] private Animated battLight;
     [SerializeField] private Animated apuLight;
-    
+
     [SerializeField] private Switch battSwitch;
     [SerializeField] private Switch apuSwitch;
+    [SerializeField] private Switch armSwitch;
+
 
 
     //state variables
@@ -49,39 +31,61 @@ public class SystemController : MonoBehaviour
 
     public void OnEnable()
     {
-
-        battSwitch.OnSwitchPressed += OnBattSwitchPressedHandler;
+        //Connecting Switches
+        if (battSwitch != null)
+            battSwitch.OnSwitchPressed += OnBattSwitchPressedHandler;
+        if (apuSwitch != null)
+            apuSwitch.OnSwitchPressed += OnAPUSwitchPressedHandler;
+        if (armSwitch != null)
+            armSwitch.OnSwitchPressed += OnARMSwitchPressedHandler;
         // Don't forget to unsubscribe in OnDisable
-        apuSwitch.OnSwitchPressed += OnAPUSwitchPressedHandler;
+    }
 
+    private void Start()
+    {
+        // Initialize both battery visuals to the off frame.
+        if (battAnim != null) battAnim.ChangeAnimationState(batt ? ON : OFF);
+        if (battLight != null) battLight.ChangeAnimationState(batt ? ON : OFF);
+        if (apuAnim != null) apuAnim.ChangeAnimationState(apu ? ON : OFF);
+        if (apuLight != null) apuLight.ChangeAnimationState(apu ? ON : OFF);
+        if (armAnim != null) armAnim.ChangeAnimationState(arm ? ON : OFF);
+    }
+
+    private void OnDisable()
+    {
+        //Disconnecting Switches
+        if (battSwitch != null)
+            battSwitch.OnSwitchPressed -= OnBattSwitchPressedHandler;
+        if (apuSwitch != null)
+            apuSwitch.OnSwitchPressed -= OnAPUSwitchPressedHandler;
+        if (armSwitch != null)
+            armSwitch.OnSwitchPressed -= OnARMSwitchPressedHandler;
     }
 
     void OnBattSwitchPressedHandler()
     {
-        if (battAnim.currentState == OFF)
-        {
-            battAnim.ChangeAnimationState(ON);
-            batt = true;
-        } else
-        {
-            battAnim.ChangeAnimationState(OFF);
-            batt = false;
-        }
+        batt = !batt;
+        if (battAnim != null) battAnim.ChangeAnimationState(batt ? ON : OFF);
+        if (battLight != null) battLight.ChangeAnimationState(batt ? ON : OFF);
     }
 
     void OnAPUSwitchPressedHandler()
     {
-        // Open door
+        apu = !apu;
+        if (battAnim != null) apuAnim.ChangeAnimationState(apu ? ON : OFF);
+        if (battLight != null) apuLight.ChangeAnimationState(apu ? ON : OFF);
+    }
+
+    void OnARMSwitchPressedHandler()
+    {
+        arm = !arm;
+        if (armAnim != null) armAnim.ChangeAnimationState(arm ? ON : OFF);
     }
 
     // Update is called once per frame
-    /*
+
     void Update()
     {
-        if (batt)
-            battLight.ChangeAnimationState(ON);
-        else
-            battLight.ChangeAnimationState(OFF);
+
     }
-    */
 }

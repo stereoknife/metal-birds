@@ -18,7 +18,6 @@ public class Switch : MonoBehaviour
     {
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
         var pos = Mouse.current.position.ReadValue();
-        
         RaycastHit hit;
         if (Physics.Raycast(Camera.main.ScreenPointToRay(pos), out hit))
         {
